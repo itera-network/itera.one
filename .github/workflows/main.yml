@@ -26,21 +26,4 @@ jobs:
         env:
           GITHUB_JOB_STATUS: ${{ job.status }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-          LINE_ROOM_ID: ${{ secrets.LINE_ROOM_ID }}
-          CUSTOM_SCRIPT: |
-            read -r -d '' _BODY <<- EOM || true
-            {
-                "to": "${LINE_ROOM_ID}",
-                "messages":[
-                    {
-                        "type":"text",
-                        "text":"${GITHUB_JOB_STATUS_EMOJI} Github action #${GITHUB_RUN_NUMBER} (https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) of ${GITHUB_REPOSITORY} ${GITHUB_JOB_STATUS}"
-                    }
-                ]
-            }
-            EOM
-            
-            curl -v -X POST https://api.line.me/v2/bot/message/push \
-              -H 'Content-Type: application/json' \
-              -H "Authorization: Bearer ${LINE_CHANNEL_ACCESS_TOKEN}" \
-              -d "$_BODY"
+          LINE_TO: ${{ secrets.LINE_TO }}
