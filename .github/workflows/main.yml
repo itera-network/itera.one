@@ -1,0 +1,46 @@
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: A job to test the action-deploy action by deploying a test site
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy test site
+        id: fleek
+        uses: itera-network/action-deploy@master
+        with:
+          apiKey: ${{ secrets.FLEEK_API_KEY }}
+      - name: Get the output url
+        run: echo "Deploy url is ${{ steps.fleek.outputs.deployUrl }}"
+      - uses: itera-network/actions-coudflare-dns@master
+        with:
+          name: ${{ github.event.repository.name }}
+          cid: ${{ steps.fleek.outputs.siteCid }}
+          gateway: cloudflare-ipfs.com
+          token: ${{ secrets.CF_API_TOKEN }}
+          zone: ${{ secrets.CF_ZONE_ID }}
+      - name: Notify
+        uses: up9cloud/action-notify@master
+        if: cancelled() == false
+        env:
+          GITHUB_JOB_STATUS: ${{ job.status }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_ROOM_ID: ${{ secrets.LINE_ROOM_ID }}
+          CUSTOM_SCRIPT: |
+            read -r -d '' _BODY <<- EOM || true
+            {
+                "to": "${LINE_ROOM_ID}",
+                "messages":[
+                    {
+                        "type":"text",
+                        "text":"${GITHUB_JOB_STATUS_EMOJI} Github action #${GITHUB_RUN_NUMBER} (https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) of ${GITHUB_REPOSITORY} ${GITHUB_JOB_STATUS}"
+                    }
+                ]
+            }
+            EOM
+            
+            curl -v -X POST https://api.line.me/v2/bot/message/push \
+              -H 'Content-Type: application/json' \
+              -H "Authorization: Bearer ${LINE_CHANNEL_ACCESS_TOKEN}" \
+              -d "$_BODY"

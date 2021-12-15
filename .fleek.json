@@ -1,0 +1,14 @@
+{
+  "site": {
+    "id": "c09b17c2-353c-4d7b-8283-855fdc08b796",
+    "team": "90f1b36e-adb9-40d6-a419-8c64a64aff0a",
+    "platform": "ipfs",
+    "source": "ipfs",
+    "name": "itera-one-soft-recipe-7945"
+  },
+  "build": {
+    "baseDir": "",
+    "publicDir": "dist",
+    "rootDir": ""
+  }
+}
