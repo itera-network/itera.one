@@ -3,25 +3,22 @@ on: [push]
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: A job to test the action-deploy action by deploying a test site
+    name: Deploying a site
     steps:
       - uses: actions/checkout@v2
-      - name: Deploy test site
-        id: fleek
+      - id: fleek
         uses: itera-network/action-deploy@master
         with:
           apiKey: ${{ secrets.FLEEK_API_KEY }}
-      - name: Get the output url
-        run: echo "Deploy url is ${{ steps.fleek.outputs.deployUrl }}"
+      - run: echo "Deploy url is ${{ steps.fleek.outputs.deployUrl }}"
       - uses: itera-network/actions-coudflare-dns@master
         with:
           name: ${{ github.event.repository.name }}
           cid: ${{ steps.fleek.outputs.siteCid }}
-          gateway: cloudflare-ipfs.com
+          gateway: ${{ secrets.IPFS_GATEWAY }}
           token: ${{ secrets.CF_API_TOKEN }}
           zone: ${{ secrets.CF_ZONE_ID }}
-      - name: Notify
-        uses: up9cloud/action-notify@master
+      - uses: up9cloud/action-notify@master
         if: cancelled() == false
         env:
           GITHUB_JOB_STATUS: ${{ job.status }}
